@@ -9,13 +9,13 @@ namespace GuimoSoft.Cache.InMemory
     {
         private readonly IDictionary<TKey, CacheItem<TValue>> _cache;
 
-        private readonly CacheConfigurations<TKey, TValue> _configs;
+        private readonly InMemoryCacheConfigurations<TKey, TValue> _configs;
 
-        public Cache(Action<ICacheConfigurationsBuilder<TKey, TValue>> configure)
+        public Cache(Action<IInMemoryCacheConfigurationsBuilder<TKey, TValue>> configure)
         {
             if (configure is null)
                 throw new ArgumentNullException(nameof(configure));
-            var builder = new CacheConfigurations<TKey, TValue>.CacheConfigurationsBuilder();
+            var builder = new InMemoryCacheConfigurations<TKey, TValue>.InMemoryCacheConfigurationsBuilder();
             configure(builder);
             _configs = builder.Build();
 
@@ -60,7 +60,7 @@ namespace GuimoSoft.Cache.InMemory
         }
 
         public CacheItemBuilder<TKey, TValue> Get(TKey key)
-            => new CacheItemBuilder<TKey, TValue>(key, TryGetItemInCache, OnInstanceCreated);
+            => new CacheItemBuilder<TKey, TValue>(key, TryGetItemInCache, OnInstanceCreated, _configs.ValueFactoryProxy);
 
         public void Dispose()
         {

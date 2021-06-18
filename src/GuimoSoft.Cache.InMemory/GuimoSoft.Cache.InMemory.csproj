@@ -1,12 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GuimoSoft.Cache.InMemory\GuimoSoft.Cache.InMemory.csproj" />
+    <ProjectReference Include="..\GuimoSoft.Cache\GuimoSoft.Cache.csproj" />
   </ItemGroup>
 
 </Project>

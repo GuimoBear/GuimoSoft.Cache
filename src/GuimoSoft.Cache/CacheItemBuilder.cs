@@ -1,5 +1,4 @@
-﻿using GuimoSoft.Cache.Utils;
-using System;
+﻿using GuimoSoft.Cache.Delegates;
 using System.Threading.Tasks;
 
 namespace GuimoSoft.Cache
@@ -7,41 +6,37 @@ namespace GuimoSoft.Cache
 
     public class CacheItemBuilder<TKey, TValue>
     {
-        public delegate TValue Factory();
-        public delegate Task<TValue> AsyncFactory();
-
-        internal delegate bool TryGetCachedItem(TKey key, out CacheState cacheState, out TValue value);
-        internal delegate void ValueCreated(TKey key, CacheState cacheState, TValue value);
-
         private readonly TKey _key;
-        private readonly TryGetCachedItem _tryGetCachedValueFunc;
-        private readonly ValueCreated _onValueCreated;
-
-        private Factory _valueFactory = default;
+        private readonly TryGetCachedItem<TKey, TValue> _tryGetCachedValueFunc;
+        private readonly ValueCreated<TKey, TValue> _onValueCreated;
+        private readonly IValueFactoryProxy<TValue> _valueFactoryProxy;
+        private ValueFactory<TValue> _valueFactory = default;
 
         internal CacheItemBuilder(
             TKey key, 
-            TryGetCachedItem tryGetCachedValueFunc, 
-            ValueCreated onValueCreated)
+            TryGetCachedItem<TKey, TValue> tryGetCachedValueFunc, 
+            ValueCreated<TKey, TValue> onValueCreated, 
+            IValueFactoryProxy<TValue> valueFactoryProxy)
         {
             _key = key;
             _tryGetCachedValueFunc = tryGetCachedValueFunc;
             _onValueCreated = onValueCreated;
+            _valueFactoryProxy = valueFactoryProxy;
         }
 
-        public TValue OrAdd(Factory factory)
+        public TValue OrAdd(ValueFactory<TValue> factory)
         {
             _valueFactory = factory;
             return this;
         }
 
-        public async Task<TValue> OrAddAsync(AsyncFactory asyncFactory)
+        public async Task<TValue> OrAddAsync(AsyncValueFactory<TValue> asyncFactory)
         {
             if (_tryGetCachedValueFunc(_key, out var cacheState, out var value))
                 return value;
             if (asyncFactory is not null)
             {
-                value = await asyncFactory();
+                value = await _valueFactoryProxy.ProduceAsync(asyncFactory);
                 _onValueCreated(_key, cacheState, value);
                 return value;
             }
@@ -54,7 +49,7 @@ namespace GuimoSoft.Cache
                 return value;
             if (_valueFactory is not null)
             {
-                value = _valueFactory();
+                value = _valueFactoryProxy.Produce(_valueFactory);
                 _onValueCreated(_key, cacheState, value);
                 return value;
             }

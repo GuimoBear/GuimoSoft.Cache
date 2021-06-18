@@ -8,8 +8,7 @@ namespace GuimoSoft.Cache
     {
         ICacheConfigurationsBuilder<TKey, TValue> WithTTL(TimeSpan ttl);
         ICacheConfigurationsBuilder<TKey, TValue> WithKeyEqualityComparer(IEqualityComparer<TKey> equalityComparer);
-        ICacheConfigurationsBuilder<TKey, TValue> ShareValuesBetweenKeys(IEqualityComparer<TValue> equalityComparer);
-        ICacheConfigurationsBuilder<TKey, TValue> WithCleaner(TimeSpan cleaningInterval);
         ICacheConfigurationsBuilder<TKey, TValue> AddLogging(ILogger logger);
+        ICacheConfigurationsBuilder<TKey, TValue> UsingValueFactoryProxy(IValueFactoryProxy<TValue> valueFactoryProxy);
     }
 }
